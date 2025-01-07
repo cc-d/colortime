@@ -31,7 +31,7 @@ def write_time(color_idx: int) -> None:
     """Write the current time with color formatting."""
     now = dt.now(UTC).strftime("%H:%M:%S")
     color = VAL_COLORS[color_idx]
-    formatted_time = f"{color}{now}\033[0m"
+    formatted_time = f"{color}{now[1:]}\033[0m"
     print(formatted_time)
 
 
