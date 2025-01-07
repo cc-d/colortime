@@ -105,43 +105,49 @@ VAL_COLORS: List[str] = [
 FG_LEN = len(FG_COLORS)
 BG_LEN = len(BG_COLORS)
 
-cur_cols = (0, 0)
+cur_cols = [0, 0]
 
 def get_color(repeat_inc: int) -> str:
-    if repeat_inc >= FG_LEN:
-        cur_cols[0] += 1
-        if cur_cols[0] >= FG_LEN:
-            cur_cols[0] = 0
-            cur_cols[1] += 1
-            if cur_cols[1] >= BG_LEN:
-                cur_cols[1] = 0
-    return ''.join(str(c) for c in cur_cols)
+
+    cur_cols[0] += 1
+    if cur_cols[0] == FG_LEN:
+        cur_cols[0] = 0
+
+    if repeat_inc == 0:
+        cur_cols[1] += 1
+        if cur_cols[1] == BG_LEN:
+            cur_cols[1] = 0
+
+    return FG_COLORS[cur_cols[0]][0] + BG_COLORS[cur_cols[1]][0]
 
 
-def write_time(wf: Callable[[str], None], msg: str, rinc: int) -> str:
+def write_time(rinc: int) -> str:
+    msg = dt.now(UTC).strftime("%H:%M:%S")
     hr, mn, sec = map(int, msg.split(":"))
 
 
     hr = f'{hr}'[1:]
-    print('hr', hr, f'{hr}'[1:])
     color = get_color(rinc)
-    formatted_time = (
-        f"{color}{hr}:{mn:02}:{sec:02}"
-    )
-    wf(formatted_time + "\033[0m\n")
+    
+    formatted_time = ':'.join((f'{color}{hr}', f'{mn:02}', f"{sec:02}"))
+    
+    print(f'{formatted_time}\033[0m\033')
     return formatted_time
 
 
 def main() -> None:
-    wf: Callable[[str], None] = stdout.write
     last_time: str | None = None
     rinc = 0
     while True:
-        current_time = dt.now(UTC).strftime("%H:%M:%S")
-        if current_time != last_time:
-            write_time(wf, current_time, rinc)
-            last_time = current_time
-            rinc += 1
+        
+        write_time(rinc)
+        rinc += 1
+        
+        
+            
+        if rinc >= REPEAT:
+            rinc = 0
+            
         sleep(DELAY)
 
 
