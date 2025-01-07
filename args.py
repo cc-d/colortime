@@ -7,6 +7,14 @@ if "unittest" in argv or "tests" in argv:
     REPEAT = 5  # Default repeat
 else:
     parser = ArgumentParser()
+
+    parser.add_argument(
+        "repeat",
+        type=int,
+        nargs="?",
+        default=3,
+        help="Number of repeats for color sequence",
+    )
     parser.add_argument(
         "delay",
         type=float,
@@ -14,13 +22,7 @@ else:
         default=1.0,
         help="Delay between updates in seconds",
     )
-    parser.add_argument(
-        "repeat",
-        type=int,
-        nargs="?",
-        default=5,
-        help="Number of repeats for color sequence",
-    )
+
     args = parser.parse_args()
     DELAY = args.delay
     REPEAT = args.repeat
