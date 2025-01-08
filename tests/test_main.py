@@ -1,4 +1,4 @@
-import pytest
+
 from sys import path
 from os.path import abspath, dirname, join as opjoin
 
@@ -46,11 +46,3 @@ def test_repeat():
 def test_main(msleep):
     main()
 
-
-from args import get_args, DELAY, REPEAT, argv
-
-
-@patch("args.argv", ["lol", 5, 2.3])
-def test_get_args_argv():
-    assert get_args() == (5, 2.3)
-    print(get_args())

@@ -1,27 +1,25 @@
-from argparse import ArgumentParser
-from sys import argv
+import argparse as ap
+
 from typing import Tuple as T
-
-# Default values
 REPEAT, DELAY = 8, 1.89
-
-
 def get_args() -> T[int, float]:
-
-    parser = ArgumentParser()
+    parser = ap.ArgumentParser()
     parser.add_argument(
         "repeat",
         type=int,
         nargs="?",
-        default=REPEAT,
+        default=8,
         help="Number of repeats for color sequence",
     )
     parser.add_argument(
         "delay",
         type=float,
         nargs="?",
-        default=DELAY,
+        default=1.89,
         help="Delay between updates in seconds",
     )
     args = parser.parse_args()
     return (args.repeat, args.delay)
+
+if __name__ == '__main__':
+    REPEAT, DELAY = get_args() # pragma: no cover
