@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 from datetime import datetime as dt, UTC
 from time import sleep
-from args import DELAY, REPEAT
+
 from typing import Tuple as T
+from args import get_args
+
 
 # Foreground and Background colors
 FG_COLORS = [
@@ -37,28 +39,31 @@ def get_color(idx: int) -> str:
 
 
 def write_time(color: str) -> str:
-    """Write the current time with color formatting."""
     fmt_time = f"{color}{get_time()}\033[0m"
     print(fmt_time)
     return fmt_time
 
 
-def repeat(count: int, color_idx: int) -> T[int, int]:
+def next_color(count: int, color_idx: int, repeat: int) -> T[int, int]:
     count += 1
-    if count >= REPEAT:
+    if count >= repeat:
         count = 0
-        color_idx = (color_idx + 1) % NUM_COLORS
+        color_idx = color_idx + 1
+
+        if color_idx >= NUM_COLORS - 1:
+            color_idx = 0
 
     return count, color_idx
 
 
-def main(): # pragma: no cover
-    count, idx = 0, 0 # pragma: no cover
+def main():
+    _repeat, _delay = get_args()
+    cur_count, col_idx = 0, 0
     while True:
-        write_time(get_color(idx))
-        count, idx = repeat(count, idx)
-        sleep(DELAY)
+        write_time(get_color(col_idx))
+        cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
+        sleep(_delay)
 
 
-if __name__ == "__main__":  # noqa: dumb
+if __name__ == "__main__":
     main()  # pragma: no cover

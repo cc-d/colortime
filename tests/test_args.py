@@ -11,8 +11,7 @@ from unittest.mock import patch
 
 @patch("sys.argv", ['lol', '5', '2.3'])
 def test_get_args_argv():
-    from args import get_args, ap, REPEAT, DELAY
+    from args import get_args
     args = get_args()
     assert args == (5, 2.3)
-    assert args == (REPEAT, DELAY)
 
