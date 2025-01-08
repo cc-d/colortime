@@ -2,6 +2,7 @@
 from datetime import datetime as dt, UTC
 from time import sleep
 from args import DELAY, REPEAT
+from typing import Tuple as T
 
 # Foreground and Background colors
 FG_COLORS = [
@@ -27,29 +28,37 @@ VAL_COLORS = [
 NUM_COLORS = len(VAL_COLORS)
 
 
-def write_time(color_idx: int) -> None:
+def get_time() -> str:
+    return dt.now(UTC).strftime("%H:%M:%S")[1:]
+
+
+def get_color(idx: int) -> str:
+    return VAL_COLORS[idx]
+
+
+def write_time(color: str) -> str:
     """Write the current time with color formatting."""
-    now = dt.now(UTC).strftime("%H:%M:%S")
-    color = VAL_COLORS[color_idx]
-    formatted_time = f"{color}{now[1:]}\033[0m"
-    print(formatted_time)
+    fmt_time = f"{color}{get_time()}\033[0m"
+    print(fmt_time)
+    return fmt_time
 
 
-def main() -> None:
-    color_idx = 0
-    repeat_count = 0
+def repeat(count: int, color_idx: int) -> T[int, int]:
+    count += 1
+    if count >= REPEAT:
+        count = 0
+        color_idx = (color_idx + 1) % NUM_COLORS
 
+    return count, color_idx
+
+
+def main(): # pragma: no cover
+    count, idx = 0, 0 # pragma: no cover
     while True:
-        write_time(color_idx)
+        write_time(get_color(idx))
+        count, idx = repeat(count, idx)
         sleep(DELAY)
 
-        # Update repeat count and color index
-        repeat_count += 1
-        if repeat_count >= REPEAT:
-            repeat_count = 0
-            color_idx = (color_idx + 1) % NUM_COLORS
 
-
-if __name__ == "__main__":
-    main()
-
+if __name__ == "__main__":  # noqa: dumb
+    main()  # pragma: no cover
