@@ -15,21 +15,13 @@ from main import (
 )
 
 
-def test_get_time():
-    t = get_time()
-    assert len(t.split(":")[0]) == 1
-
-
-def test_get_color():
-    for i in range(len(VAL_COLORS)):
-        assert get_color(i) == VAL_COLORS[i]
-
-
 def test_write_time():
-    color = get_color(0)
-    wt = write_time(color)
-    assert wt.endswith("\033[0m")
-    assert wt.startswith(color[0:4])
+    for i in range(len(VAL_COLORS)):
+        cur_time = get_time()
+        cur_color = get_color(i)
+        with patch('main.get_time') as mock_gt:
+            mock_gt.return_value = cur_time
+            assert write_time(cur_color) == f'{cur_color}{cur_time}\33[0m'
 
 
 @pt.mark.parametrize(
@@ -66,7 +58,7 @@ def test_main_with_args(max_repeats, interval):
         "sys.argv", ["main.py", str(max_repeats), str(interval)]
     ), patch("main.sleep") as mock_sleep:
 
-        def mock_sleep_effect(duration):
+        def mock_sleep_effect(_):
             if mock_sleep.call_count >= max_repeats:
                 raise KeyboardInterrupt
 
