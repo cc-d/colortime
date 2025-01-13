@@ -40,6 +40,7 @@ def get_color(idx: int) -> str:
 
 def write_time(color: str) -> str:
     fmt_time = f"{color}{get_time()}\033[0m"
+
     print(fmt_time)
     return fmt_time
 
@@ -50,7 +51,7 @@ def next_color(count: int, color_idx: int, repeat: int) -> T[int, int]:
         count = 0
         color_idx = color_idx + 1
 
-        if color_idx >= NUM_COLORS - 1:
+        if color_idx >= NUM_COLORS:
             color_idx = 0
 
     return count, color_idx
