@@ -5,6 +5,8 @@ from time import sleep
 from typing import Tuple as T
 from args import get_args
 
+from random import choice, randint
+
 
 # Foreground and Background colors
 FG_COLORS = [
@@ -34,14 +36,10 @@ def get_time() -> str:
     return dt.now(UTC).strftime("%H:%M:%S")[1:]
 
 
-def get_color(idx: int) -> str:
-    return VAL_COLORS[idx]
-
-
-def write_time(color: str) -> str:
+def get_colortime(idx: str) -> str:
+    color = VAL_COLORS[idx]
     fmt_time = f"{color}{get_time()}\033[0m"
 
-    print(fmt_time)
     return fmt_time
 
 
@@ -58,11 +56,25 @@ def next_color(count: int, color_idx: int, repeat: int) -> T[int, int]:
 
 
 def main():
-    _repeat, _delay = get_args()
+    _repeat, _delay, _col_count, _col_offset = get_args()
     cur_count, col_idx = 0, 0
+
+    columns = [[] for _ in range(_col_count)]
+    for c in range(_col_count):
+        columns[(c + 1) * -1] = [cur_count, col_idx]
+        if len(columns) == c - 1:
+            break
+        for _ in range(_col_offset):
+            cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
+
     while True:
-        write_time(get_color(col_idx))
-        cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
+        cline = ''
+        for c in columns:
+            cline += get_colortime(c[1])
+
+            c[0], c[1] = next_color(c[0], c[1], _repeat)
+        print(cline)
+        # cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
         sleep(_delay)
 
 
