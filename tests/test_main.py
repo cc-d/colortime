@@ -9,14 +9,14 @@ from main import (
     write_time,
     get_color,
     get_time,
-    VAL_COLORS,
+    colors,
     NUM_COLORS,
     next_color,
 )
 
 
 def test_write_time():
-    for i in range(len(VAL_COLORS)):
+    for i in range(len(colors)):
         cur_time = get_time()
         cur_color = get_color(i)
         with patch('main.get_time') as mock_gt:
@@ -29,8 +29,8 @@ def test_write_time():
     [
         (0, 0, 5),  # Standard increment
         (4, 0, 5),  # Last iteration before rollover
-        (0, len(VAL_COLORS) - 1, 5),  # Rollover to the beginning of VAL_COLORS
-        (4, len(VAL_COLORS) - 1, 5),  # Last iteration before full rollover
+        (0, len(colors) - 1, 5),  # Rollover to the beginning of VAL_COLORS
+        (4, len(colors) - 1, 5),  # Last iteration before full rollover
     ],
 )
 def test_next_color(count, color_idx, repeat):

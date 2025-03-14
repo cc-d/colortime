@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-from datetime import datetime as dt, UTC
+from datetime import datetime as dt, timezone as tz, timedelta
+
 from time import sleep
-
-from typing import Tuple as T
+import typing as _T
 from args import get_args
-
+from random import shuffle
 from random import choice, randint
 
 
@@ -25,32 +25,45 @@ BG_COLORS = [
     ("\033[47m", "white"),
 ]
 
-# Precompute all foreground-background color combinations
-VAL_COLORS = [
-    f"{fg[0]}{bg[0]}" for bg in BG_COLORS for fg in FG_COLORS if fg[1] != bg[1]
-]
-NUM_COLORS = len(VAL_COLORS)
+class ColorCell:
+    def __init__(self, fg: str, bg: str):
+        self.fg, self.bg = fg, bg
+
+    def __str__(self) -> str:
+        return f'{self.fg[0]}{self.bg[0]}{get_time()}\033[0m'
+
+
+class ColorPool:
+    pool: _T.List[ColorCell] = []
+    fg_colors: _T.List = FG_COLORS
+    bg_colors: _T.List[_T.Tuple] = list(shuffle(BG_COLORS))
+    def __init__(self):
+        self.populate()
+
+
+
+    def populate(self) -> _T.List[ColorCell]:
+        last_start = None if self.pool == [] else self.pool[0]
+
+        self.pool = [
+            f"{fg[0]}{bg[0]}" for bg in self.bg_colors for fg in self.fg_colors if fg[1] != bg[1]
+        ]
+        while self.pool[0].startswith(last_start.fg):
 
 
 def get_time() -> str:
-    return dt.now(UTC).strftime("%H:%M:%S")[1:]
+    return dt.now(dt.time(tz.utc)).strftime("%H:%M:%S")[1:]
 
 
-def get_colortime(idx: str) -> str:
-    color = VAL_COLORS[idx]
-    fmt_time = f"{color}{get_time()}\033[0m"
-
-    return fmt_time
-
-
-def next_color(count: int, color_idx: int, repeat: int) -> T[int, int]:
+]
+def next_color(count: int, color_idx: int, repeat: int, last_bg: int) -> T[int, int]:
     count += 1
     if count >= repeat:
         count = 0
         color_idx = color_idx + 1
 
         if color_idx >= NUM_COLORS:
-            color_idx = 0
+
 
     return count, color_idx
 
