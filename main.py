@@ -23,7 +23,16 @@ BG_COLORS = [
     ("\033[45m", "magenta"),
     ("\033[46m", "cyan"),
     ("\033[47m", "white"),
+
+
 ]
+
+
+
+
+def get_time() -> str:
+    return dt.now(dt.time(tz.utc)).strftime("%H:%M:%S")[1:]
+
 
 class ColorCell:
     def __init__(self, fg: str, bg: str):
@@ -37,37 +46,31 @@ class ColorPool:
     pool: _T.List[ColorCell] = []
     fg_colors: _T.List = FG_COLORS
     bg_colors: _T.List[_T.Tuple] = list(shuffle(BG_COLORS))
-    def __init__(self):
+
+    def __init__(self, repeat: int, delay: float, num_cols: int, col_offset: int):
+
         self.populate()
 
 
 
     def populate(self) -> _T.List[ColorCell]:
         last_start = None if self.pool == [] else self.pool[0]
-
         self.pool = [
-            f"{fg[0]}{bg[0]}" for bg in self.bg_colors for fg in self.fg_colors if fg[1] != bg[1]
+            ColorCell(fg[0], bg[0]) for bg in self.bg_colors for fg in self.fg_colors if fg[1] != bg[1]
         ]
-        while self.pool[0].startswith(last_start.fg):
+        while self.pool[0].fg == last_start.fg:
+            self.pool.append(self.pool.pop(0))
 
 
-def get_time() -> str:
-    return dt.now(dt.time(tz.utc)).strftime("%H:%M:%S")[1:]
 
-
+    def run(self):
+        self.col
 ]
-def next_color(count: int, color_idx: int, repeat: int, last_bg: int) -> T[int, int]:
-    count += 1
-    if count >= repeat:
-        count = 0
-        color_idx = color_idx + 1
 
-        if color_idx >= NUM_COLORS:
+def main():
+    ColorPool(*get_args()).run()
 
-
-    return count, color_idx
-
-
+'''
 def main():
     _repeat, _delay, _col_count, _col_offset = get_args()
     cur_count, col_idx = 0, 0
@@ -90,6 +93,7 @@ def main():
         # cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
         sleep(_delay)
 
+'''
 
 if __name__ == "__main__":
     main()  # pragma: no cover
