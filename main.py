@@ -7,7 +7,6 @@ from args import get_args
 from random import shuffle
 from random import choice, randint
 
-
 # Foreground and Background colors
 FG_COLORS = [
     ("\033[31m", "red"),
@@ -23,11 +22,7 @@ BG_COLORS = [
     ("\033[45m", "magenta"),
     ("\033[46m", "cyan"),
     ("\033[47m", "white"),
-
-
 ]
-
-
 
 
 def get_time() -> str:
@@ -47,28 +42,34 @@ class ColorPool:
     fg_colors: _T.List = FG_COLORS
     bg_colors: _T.List[_T.Tuple] = list(shuffle(BG_COLORS))
 
-    def __init__(self, repeat: int, delay: float, num_cols: int, col_offset: int):
-
-        self.populate()
-
-
+    def __init__(
+        self, repeat: int, delay: int, num_cols: int, col_offset: int
+    ):
+        self.repeat, self.delay = repeat, delay
+        self.num_cols, self.col_offset = num_cols, col_offset
 
     def populate(self) -> _T.List[ColorCell]:
         last_start = None if self.pool == [] else self.pool[0]
         self.pool = [
-            ColorCell(fg[0], bg[0]) for bg in self.bg_colors for fg in self.fg_colors if fg[1] != bg[1]
+            ColorCell(fg[0], bg[0])
+            for bg in self.bg_colors
+            for fg in self.fg_colors
+            if fg[1] != bg[1]
         ]
         while self.pool[0].fg == last_start.fg:
             self.pool.append(self.pool.pop(0))
 
-
-
     def run(self):
-        self.col
-]
+        self.populate()
+        _plen, _curidx, _pbuff = len(self.pool), 0, ''
 
-def main():
-    ColorPool(*get_args()).run()
+        while True:
+            for i in range(_plen):
+                _pbuff += self.pool[i]
+
+
+def main(): ...
+
 
 '''
 def main():
