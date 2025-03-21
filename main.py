@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from datetime import datetime as dt, UTC
 from time import sleep
-
+from random import shuffle
 from typing import Tuple as T
 from args import get_args
 
@@ -14,7 +14,7 @@ FG_COLORS = [
     ("\033[92m", "bright green"),
 ]
 
-BG_COLORS = [
+bg_colors = [
     ("\033[40m", "black"),
     ("\033[42m", "green"),
     ("\033[43m", "yellow"),
@@ -24,11 +24,15 @@ BG_COLORS = [
     ("\033[47m", "white"),
 ]
 
+
 # Precompute all foreground-background color combinations
-VAL_COLORS = [
-    f"{fg[0]}{bg[0]}" for bg in BG_COLORS for fg in FG_COLORS if fg[1] != bg[1]
+
+colors = [
+    f"{fg[0]}{bg[0]}" for bg in bg_colors for fg in FG_COLORS if fg[1] != bg[1]
 ]
-NUM_COLORS = len(VAL_COLORS)
+
+
+NUM_COLORS = len(colors)
 
 
 def get_time() -> str:
@@ -36,11 +40,12 @@ def get_time() -> str:
 
 
 def get_colortime(idx: str) -> str:
-    color = VAL_COLORS[idx]
+    color = colors[idx]
     return f"{color}{get_time()}\033[0m"
 
 
 def next_color(count: int, color_idx: int, repeat: int) -> T[int, int]:
+    global colors
     count += 1
     if count >= repeat:
         count = 0
@@ -48,6 +53,13 @@ def next_color(count: int, color_idx: int, repeat: int) -> T[int, int]:
 
         if color_idx >= NUM_COLORS:
             color_idx = 0
+            shuffle(bg_colors)
+            colors = [
+                f"{fg[0]}{bg[0]}"
+                for bg in bg_colors
+                for fg in FG_COLORS
+                if fg[1] != bg[1]
+            ]
 
     return count, color_idx
 
@@ -67,9 +79,9 @@ def main():
     while True:
         cline = ''
         for c in columns:
-            cline += get_colortime(c[1])
 
             c[0], c[1] = next_color(c[0], c[1], _repeat)
+            cline += get_colortime(c[1])
         print(cline)
         # cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
         sleep(_delay)
