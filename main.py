@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
-from datetime import datetime as dt, timezone as tz, timedelta
+from datetime import datetime as dt, UTC
 from time import sleep
-import typing as _T
+
+from typing import Tuple as T
 from args import get_args
-from random import shuffle
+
 from random import choice, randint
 
 # Foreground and Background colors
@@ -23,109 +24,55 @@ BG_COLORS = [
     ("\033[47m", "white"),
 ]
 
+# Precompute all foreground-background color combinations
+VAL_COLORS = [
+    f"{fg[0]}{bg[0]}" for bg in BG_COLORS for fg in FG_COLORS if fg[1] != bg[1]
+]
+NUM_COLORS = len(VAL_COLORS)
+
 
 def get_time() -> str:
-    return dt.utcnow().strftime("%H:%M:%S")
+    return dt.now(UTC).strftime("%H:%M:%S")[1:]
 
 
-def colorstr(fg: str, bg: str, s: str) -> str:
-    return f'{fg}{bg}{s}\033[0m'
+def get_colortime(idx: str) -> str:
+    color = VAL_COLORS[idx]
+    return f"{color}{get_time()}\033[0m"
 
 
-class ColorPool:
-    pool: _T.List = []
-    fg_colors: _T.List = FG_COLORS
-    bg_colors: _T.List[_T.Tuple] = list(BG_COLORS)
-    last_color = None
+def next_color(count: int, color_idx: int, repeat: int) -> T[int, int]:
+    count += 1
+    if count >= repeat:
+        count = 0
+        color_idx += 1
 
-    def __init__(
-        self, repeat: int, delay: int, num_cols: int, col_offset: int
-    ):
-        self.repeat, self.delay = repeat, delay
-        self.num_cols, self.col_offset = num_cols, col_offset
+        if color_idx >= NUM_COLORS:
+            color_idx = 0
 
-    def populate(self):
-        shuffle(self.bg_colors)
-        shuffle(self.fg_colors)
-        self.pool = [
-            (fg, bg)
-            for bg in self.bg_colors
-            for fg in self.fg_colors
-            if fg[1] != bg[1]
-        ]
-        if self.last_color is None:
-            return
-        while self.pool[0][0] == self.last_color[0]:
-            self.pool.append(self.pool.pop(0))
-
-    def run(self):
-        self.populate()
-        pool_len = len(self.pool)
-
-        # Initialize columns with different starting positions based on col_offset
-        columns = []
-        base_idx = 0
-
-        for c in range(self.num_cols):
-            # Calculate offset index for this column
-            offset_idx = (base_idx + (c * self.col_offset)) % pool_len
-            columns.append({"idx": offset_idx, "count": 0})
-
-        # Track color exhaustion
-        total_colors_used = 0
-        need_reshuffle = False
-
-        while True:
-            line = ''
-            all_complete_cycle = True
-
-            for col in range(self.num_cols):
-                cur_col = columns[col]
-                color_pair = self.pool[cur_col["idx"]]
-
-                # Add colored time to the line
-                line += colorstr(
-                    color_pair[0][0], color_pair[1][0], get_time()
-                )
-
-                # Increment the counter
-                cur_col["count"] += 1
-
-                # If counter reaches repeat value, change the color
-                if cur_col["count"] >= self.repeat:
-                    cur_col["count"] = 0
-                    cur_col["idx"] = (cur_col["idx"] + 1) % pool_len
-                    # Remember the last color used
-                    self.last_color = self.pool[cur_col["idx"]]
-
-                    # Check if we've used all colors
-                    total_colors_used += 1
-                    if total_colors_used >= pool_len:
-                        need_reshuffle = True
-                else:
-                    # If any column hasn't completed its cycle, we don't reshuffle yet
-                    all_complete_cycle = False
-
-            # Print the full line and sleep
-            print(line)
-            sleep(self.delay)
-
-            # Only reshuffle if we need to AND all columns have completed their current cycles
-            if need_reshuffle and all_complete_cycle:
-                self.populate()
-                pool_len = len(self.pool)
-                total_colors_used = 0
-                need_reshuffle = False
-
-                # Update column indices to stay in valid range
-                for col in columns:
-                    col["idx"] = col["idx"] % pool_len
+    return count, color_idx
 
 
 def main():
-    ct = ColorPool(*get_args())
-    ct.populate()
-    ct.run()
+    _repeat, _delay, _col_count, _col_offset = get_args()
+    cur_count, col_idx = 0, 0
+
+    columns = [[] for _ in range(_col_count)]
+    for c in range(_col_count):
+        columns[(c + 1) * -1] = [cur_count, col_idx]
+        if len(columns) == c - 1:
+            break
+        for _ in range(_col_offset):
+            cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
+
+    while True:
+        cline = ''
+        for c in columns:
+            cline += get_colortime(c[1])
+
+            c[0], c[1] = next_color(c[0], c[1], _repeat)
+        print(cline)
+        # cur_count, col_idx = next_color(cur_count, col_idx, _repeat)
+        sleep(_delay)
 
 
 if __name__ == "__main__":
